@@ -31,7 +31,7 @@ public class FileTransfer {
         in = new Scanner(System.in);
         System.out.println("Bem-vindo ao SocketFileTransfer!");
         System.out.println("Escolha uma das opções abaixo:");
-        System.out.println("1-Servidor\n2-Cliente\n->");
+        System.out.print("1-Servidor\n2-Cliente\n->");
         int option = in.nextInt();
         switch (option) {
             case 1:
@@ -63,6 +63,7 @@ public class FileTransfer {
                     create();
                     break;
                 case 3:
+                    retrieve();
                     break;
                 case 0:
                     break;
@@ -71,6 +72,7 @@ public class FileTransfer {
                     break;
             }
         } while (option != 0);
+        c.close();
 
     }
 
@@ -95,10 +97,24 @@ public class FileTransfer {
     }
 
     private static void create() {
+        System.out.println("");
         System.out.println("Digite o caminho do arquivo:");
         String filename = in.nextLine();
         try {
             String resp = c.sendCommand(TypeRequest.CREATE + " " + filename);
+            System.out.println("Status: " + resp);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("");
+    }
+
+    private static void retrieve() {
+        System.out.println("");
+        System.out.println("Digite o nome do arquivo:");
+        String filename = in.nextLine();
+        try {
+            String resp = c.sendCommand(TypeRequest.GET + " " + filename);
             System.out.println("Status: " + resp);
         } catch (InterruptedException ex) {
             Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);

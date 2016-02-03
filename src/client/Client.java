@@ -6,9 +6,11 @@
 package client;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -16,6 +18,7 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import server.ClientRequestProcessor;
 import utils.Constants;
 import utils.TypeRequest;
 
@@ -55,6 +58,9 @@ public class Client {
                     break;
                 case TypeRequest.CREATE:
                     resp = create(out, in, args[Constants.FILENAME]);
+                    break;
+                case TypeRequest.GET:
+                    resp = retrieve(args[Constants.FILENAME], in, out);
                     break;
                 default:
                     resp = TypeRequest.NOT_FOUND;
@@ -105,6 +111,55 @@ public class Client {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             resp = TypeRequest.FAIL;
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        in.nextLine();
+        return resp;
+    }
+
+    public void close() {
+        try {
+            server.close();
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private String retrieve(String filename, Scanner in, PrintWriter out) {
+        String resp = null;
+        try {
+            out.println(TypeRequest.GET + " " + filename);
+            out.flush();
+            FileOutputStream downloaded = new FileOutputStream(new File(filename));
+            String line = null;
+            while ((line = in.nextLine()) == null) {
+                Thread.sleep(100);
+            }
+            byte[] bytesReceived = new byte[Integer.parseInt(line)];
+            out.println(TypeRequest.OK);
+            out.flush();
+            BufferedOutputStream downloadBuffer = new BufferedOutputStream(downloaded);
+            while (server.getInputStream().available() <= 0) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ClientRequestProcessor.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            int bytesRead = server.getInputStream().read(bytesReceived, 0, bytesReceived.length);
+            downloadBuffer.write(bytesReceived, 0, bytesRead);
+            downloadBuffer.flush();
+
+            downloadBuffer.close();
+            resp = TypeRequest.SUCCESS;
+
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ClientRequestProcessor.class.getName()).log(Level.SEVERE, null, ex);
+            resp = TypeRequest.FAIL;
+        } catch (IOException ex) {
+            Logger.getLogger(ClientRequestProcessor.class.getName()).log(Level.SEVERE, null, ex);
+            resp = TypeRequest.FAIL;
+        } catch (InterruptedException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
         return resp;

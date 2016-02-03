@@ -27,12 +27,17 @@ public class Server {
         server = new ServerSocket(port);
     }
 
-    public void start() throws IOException {
-        while (true) {
-            Socket client = server.accept();
-            System.out.println("New client connected " + client.getInetAddress());
-            ClientRequestProcessor requestProcessor = new ClientRequestProcessor(client);
-            requestProcessor.run();
+    public void start() {
+        System.out.println("Iniciando servidor...");
+        try {
+            while (true) {
+                Socket client = server.accept();
+                System.out.println("New client connected " + client.getInetAddress());
+                ClientRequestProcessor requestProcessor = new ClientRequestProcessor(client);
+                requestProcessor.run();
+            }
+        } catch (IOException e) {
+            System.out.println("Não foi possível iniciar o servidor");
         }
     }
 }

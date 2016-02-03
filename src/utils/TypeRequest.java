@@ -16,4 +16,6 @@ public class TypeRequest {
     public static final String CREATE = "CREATE";
     public static final String SUCCESS = "SUCCESS";
     public static final String FAIL = "FAIL";
+    public static final String GET = "GET";
+    public static final String OK = "OK";
 }
